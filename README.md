@@ -1,5 +1,9 @@
 # PlatformIO CI/CD template
 
+[![Test](https://github.com/256dpi/arduino-mqtt/actions/workflows/test.yml/badge.svg)](https://github.com/256dpi/arduino-mqtt/actions/workflows/test.yml)
+[![GitHub release](https://img.shields.io/github/release/256dpi/arduino-mqtt.svg)](https://github.com/256dpi/arduino-mqtt/releases)
+
+
 This repository template contains all the necessary files to:
 
 1. Do PlatformIO development with VSCode and remote development containers.
