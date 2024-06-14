@@ -17,7 +17,7 @@ void setup(){
   Serial.println(VERSION);
 
   S10_setup();
-  Seial.println("11");
+  Serial.println("11");
 
 }
 
