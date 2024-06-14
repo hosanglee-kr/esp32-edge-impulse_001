@@ -6,15 +6,14 @@
 #define STR_VALUE(arg) STRINGIZER(arg)
 #define VERSION STR_VALUE(BUILD_VERSION)
 
-void setup()
-{
+void setup(){
   delay(5000);
+
   Serial.begin(115200);
   Serial.print("Version: ");
   Serial.println(VERSION);
 }
 
-void loop()
-{
-  // put your main code here, to run repeatedly
+void loop(){
+
 }
