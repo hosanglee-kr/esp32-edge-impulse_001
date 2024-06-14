@@ -1,6 +1,7 @@
 # [Choice] Base image version: debian, bullseye, buster, stretch (refer to https://mcr.microsoft.com/v2/vscode/devcontainers/base/tags/list for full list)
 ARG VARIANT
-FROM mcr.microsoft.com/vscode/devcontainers/base:${VARIANT}
+#FROM mcr.microsoft.com/vscode/devcontainers/base:${VARIANT}
+FROM mcr.microsoft.com/devcontainers/python:3.11
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y install --no-install-recommends \
@@ -26,3 +27,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install -U platformio
+RUN pio upgrade
+RUN pio remote update || true
