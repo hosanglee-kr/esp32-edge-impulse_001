@@ -19,6 +19,7 @@ void S10_setup(){
   //Serial.begin(115200);
   AudioLogger::instance().begin(Serial, AudioLogger::Info);
 
+
   // start i2s input with default configuration
   Serial.println("starting I2S...");
   auto config = i2sStream.defaultConfig(RX_MODE);
@@ -28,13 +29,14 @@ void S10_setup(){
   config.bits_per_sample = 16;
   i2sStream.begin(config);
   Serial.println("I2S started");
-
+  Serial.println("I2S started");
+  
   // start data sink
   server.begin(i2sStream, config, &filler);
 }
 
 // Arduino loop  
 void S10_loop() {
-  // Handle new connections
+
   server.copy();  
 }
