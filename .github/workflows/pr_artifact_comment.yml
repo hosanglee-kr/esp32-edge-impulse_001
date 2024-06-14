@@ -10,7 +10,9 @@ jobs:
     runs-on: windows-2019
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: tonyhallett/artifacts-url-comments@v1.1.0
+      - name: workflow artifact pull request comment
+        uses: tonyhallett/artifacts-url-comments@v1.1.0    
+      #- uses: tonyhallett/artifacts-url-comments@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
