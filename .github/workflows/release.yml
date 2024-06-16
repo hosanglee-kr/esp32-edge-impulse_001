@@ -38,6 +38,8 @@ jobs:
       - name: Prepare Release Assets 1
         run: |
           sudo apt install rename
+      
+      #git update-index --chmod=+x prepare_deploy.sh
       - name: Prepare Release Assets 2
         run: |
              ./prepare_deploy.sh
