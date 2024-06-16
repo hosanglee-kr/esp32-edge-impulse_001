@@ -19,7 +19,7 @@ rename 's/.pio-build-//' .*.bin
 # remove binaries for *-all*, *-test* env and only zip containing *-test*
 rm -f *-all*.bin *-test*.bin *-test*.zip
 echo "zipping code and licence"
-zip -r OpenMQTTGateway_sources.zip src
+zip -r Sources.zip src
 mv *.zip toDeploy
 mv *.bin toDeploy
 
