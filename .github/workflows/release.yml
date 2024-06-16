@@ -9,28 +9,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Cache PlatformIO
-        uses: actions/cache@v2
-        with:
-          path: ~/.platformio
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.11'
 
-      - name: Install PlatformIO
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade platformio
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
 
       - name: Extract build version
         id: get_version
@@ -41,15 +35,34 @@ jobs:
           VERSION: ${{ steps.get_version.outputs.version-without-v }}
         run: pio run
 
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
+      - name: Prepare Release Assets 1
+        run: |
+          sudo apt install rename
+      - name: Prepare Release Assets 2
+        run: |
+             ./prepare_deploy.sh
+      - name: Get upload url
+        id: release-id
+        run: |
+          RELEASE_ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
+          echo "::set-output name=upload_url::https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets{?name,label}"
+      - name: Upload Release Assets
+        uses: bgpat/release-asset-action@03b0c30db1c4031ce3474740b0e4275cd7e126a3
         with:
-          name: firmware
-          path: .pio/build/**/mobiflight*.bin
+          pattern: "toDeploy/*"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-url: ${{ steps.release-id.outputs.upload_url }}
+          allow-overwrite: true
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: .pio/build/**/firmware*.bin
+#      - name: Archive production artifacts
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: firmware
+#          path: .pio/build/**/mobiflight*.bin
+#
+#      - name: Release
+#        uses: softprops/action-gh-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          files: .pio/build/**/firmware*.bin
