@@ -15,11 +15,12 @@ rename 's/.pio-build-//' .*.bin
    zip -r "${i%/}-libraries.zip" "$i"
   done
   ls -lA
-  mv *.zip ../../toDeploy
+  mv *.zip ../toDeploy
+  #mv *.zip ../../toDeploy
 )
 # remove binaries for *-all*, *-test* env and only zip containing *-test*
 rm -f *-all*.bin *-test*.bin *-test*.zip
-echo "zipping code and licence"
+echo "zipping source code"
 zip -r Sources.zip src
 mv *.zip toDeploy
 mv *.bin toDeploy
