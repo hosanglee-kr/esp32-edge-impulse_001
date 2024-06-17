@@ -20,7 +20,7 @@ rename 's/.pio-build-//' .*.bin
 )
 # remove binaries for *-all*, *-test* env and only zip containing *-test*
 rm -f *-all*.bin *-test*.bin *-test*.zip
-echo "zipping code and licence"
+echo "zipping source code"
 zip -r Sources.zip src
 mv *.zip toDeploy
 mv *.bin toDeploy
