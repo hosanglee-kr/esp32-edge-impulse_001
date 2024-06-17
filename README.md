@@ -18,11 +18,27 @@ This repository template contains all the necessary files to:
 Using this repository template is easy: just hit the _Use this template_ button and make a new repo. That's it!
 
 
+## git version 확인 및 update
+git --version
+git update-git-for-windows
+
+
 ## shell script 실행 변경
 git update-index --chmod=+x prepare_deploy.sh
 
 ## submodule add command
-git submodule add https://github.com/pschatzmann/arduino-audio-tools.git lib
+git submodule add https://github.com/pschatzmann/arduino-audio-tools.git lib/arduino-audio-tools
+git submodule add https://github.com/bblanchon/ArduinoJson.git lib/ArduinoJson
+
+## subModule 상태확인
+git submodule status
 
 ## submodule update
-git submodule update --remote
+# 방법 1
+git submodule init
+git submodule update
+
+##git submodule update --remote
+
+## Submodule 삭제
+$ git submodule deinit ./lib/arduino-audio-tools/
