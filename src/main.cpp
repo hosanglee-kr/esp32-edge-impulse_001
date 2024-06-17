@@ -6,7 +6,7 @@
 #define STR_VALUE(arg) STRINGIZER(arg)
 #define VERSION STR_VALUE(BUILD_VERSION)
 
-#define S10
+// #define S10
 #ifdef S10
     #include "S10_streams-i2s-webserver_wav_001.h"
 #endif
