@@ -16,3 +16,13 @@ This repository template contains all the necessary files to:
 ## Using this repository template
 
 Using this repository template is easy: just hit the _Use this template_ button and make a new repo. That's it!
+
+
+## shell script 실행 변경
+git update-index --chmod=+x prepare_deploy.sh
+
+## submodule add command
+git submodule add https://github.com/pschatzmann/arduino-audio-tools.git lib
+
+## submodule update
+git submodule update --remote
