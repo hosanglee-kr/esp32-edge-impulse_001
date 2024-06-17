@@ -19,7 +19,7 @@ jobs:
         with:
           prefix: "Firmware for this pull request:"
           suffix: "name: {name} "
-          format: "[Firmware_{name}.zip]({url})"
+          format: "[{name}_firmware.zip]({url})"
           #format: "[Firmware.zip]({url})"
           addTo: pull
 
