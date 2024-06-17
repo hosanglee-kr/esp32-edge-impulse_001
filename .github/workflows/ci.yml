@@ -6,6 +6,13 @@ on:
 
 jobs:
   build:
+    strategy:
+        fail-fast: false
+        matrix:
+          environments:
+            - "esp32doit"
+            - "esp32-s3-devkitm-1"
+  
     runs-on: ubuntu-latest
 
     steps:
@@ -37,10 +44,17 @@ jobs:
       - name: Run PlatformIO
         env:
           VERSION: "0.0.${{ github.event.number }}"
-        run: pio run
-
-      - name: Archive production artifacts
+        run: platformio run -e ${{ matrix.environments }}
+        #run: pio run
+        
+      - name: Upload Assets
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
-          path: .pio/build/**/firmware*.bin
+            name: ${{ matrix.environments }}
+            path: |
+              .pio/build/*/firmware.bin
+              .pio/build/*/partitions.bin
+            #retention-days: 7
+
+
+            
