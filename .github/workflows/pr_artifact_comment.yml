@@ -11,17 +11,25 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: workflow artifact pull request comment
-        uses: tonyhallett/artifacts-url-comments@v1.1.0    
+        uses: veitbjarsch/artifacts-url-comments@v1.2.0
+        #uses: tonyhallett/artifacts-url-comments@v1.1.0    
       #- uses: tonyhallett/artifacts-url-comments@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           prefix: "Firmware for this pull request:"
-          format: "[Firmware_{name}]({url})"
-          #format: "[Firmware.zip]({url})"
+          suffix: "name: {name}, "
+          #format: "[Firmware_{name}]({url})"
+          format: "[Firmware.zip]({url})"
           addTo: pull
 
           # Name will result in [name](url)
           # The final format is custom and is a format string 
           # e.g Whatever ({name})[{url}] etc
-          
+
+
+
+
+
+
+          ##
