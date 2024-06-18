@@ -43,7 +43,6 @@
 
 /* Includes ---------------------------------------------------------------- */
 #include <DSP_test_inferencing.h>
-#include <ei_run_classifier.h>
 
 #include "driver/i2s.h"
 
@@ -81,7 +80,7 @@ static int 	B10_I2S_Mic_uninstall(void);
 
 
 void B10_init() {
-	
+
 	Serial.println("Edge Impulse Inferencing Demo");
 
 	// summary of inferencing settings (from model_metadata.h)
