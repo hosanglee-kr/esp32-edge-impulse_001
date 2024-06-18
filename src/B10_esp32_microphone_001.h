@@ -1,3 +1,5 @@
+// https://github.com/Maaajaaa/DSP_test_inferencing/blob/main/examples/esp32/esp32_microphone/esp32_microphone.ino
+
 
 // These sketches are tested with 2.0.4 ESP32 Arduino Core
 // https://github.com/espressif/arduino-esp32/releases/tag/2.0.4
