@@ -11,8 +11,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: workflow artifact pull request comment
-        uses: veitbjarsch/artifacts-url-comments@v1.2.0
-        #uses: tonyhallett/artifacts-url-comments@v1.1.0    
+        #uses: veitbjarsch/artifacts-url-comments@v1.2.0
+        uses: tonyhallett/artifacts-url-comments@v1.1.0    
       #- uses: tonyhallett/artifacts-url-comments@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
