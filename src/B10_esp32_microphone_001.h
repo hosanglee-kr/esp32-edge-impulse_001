@@ -54,7 +54,7 @@ static bool B10_EI_init_createTask(uint32_t n_samples); 									// Init inferen
 static void B10_EI_capture_Mic_taskWorker(void *arg);
 
 
-static bool B10_EI_microphone_inference_record(void);												// Wait on new data
+static bool B10_EI_check_mic_recorded(void);												// Wait on new data
 static int 	B10_EI_microphone_audio_signal_get_data(size_t offset, size_t length, float *out_ptr) ; //Get raw audio signal data
 static void B10_EI_microphone_inference_end(void);													// Stop PDM and release buffers
 
@@ -191,7 +191,7 @@ void B10_init() {
  * @return     True when finished
  */
 
-static bool B10_EI_microphone_inference_record(void) {
+static bool B10_EI_check_mic_recorded(void) {
 	bool ret = true;
 
 	while (g_B10_EI_inference.buf_ready == 0) {
@@ -205,7 +205,7 @@ static bool B10_EI_microphone_inference_record(void) {
 
 void B10_run() {
 
-	bool m = B10_EI_microphone_inference_record();
+	bool m = B10_EI_check_mic_recorded();
 	
 	if (!m) {
 		ei_printf("ERR: Failed to record audio...\n");
@@ -214,7 +214,10 @@ void B10_run() {
 
 	signal_t signal;
 	signal.total_length		   = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
-	signal.get_data			   = &B10_EI_microphone_audio_signal_get_data;
+
+	signal.get_data			   
+		= &B10_EI_microphone_audio_signal_get_data;
+	
 	ei_impulse_result_t result = {0};
 
 	EI_IMPULSE_ERROR	r	   = run_classifier(&signal, &result, g_B10_EI_debug_nn);
