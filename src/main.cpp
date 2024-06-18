@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+
+
+
 #define B10
 
 #ifdef B10
@@ -17,7 +20,9 @@ void setup() {
 }
 
 void loop() {
+
 	#ifdef B10
 		B10_init();
 	#endif
+
 }
