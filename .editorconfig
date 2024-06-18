@@ -22,8 +22,8 @@ indent_size = 2
 indent_style = space
 
 [*.{c,cc,cp,cpp,cxx,h,hh,hpp,hxx,ii,inl,ino,ixx,pde,tpl,tpp,txx}]
-indent_size = 2
-indent_style = space
+indent_size = 4
+indent_style = tab
 
 [*.{go,mod}]
 indent_style = tab
