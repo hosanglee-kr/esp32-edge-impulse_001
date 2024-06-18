@@ -1,4 +1,4 @@
-# PlatformIO CI/CD template
+# esp32-edge-impulse_001
 
 [![Test](https://github.com/256dpi/arduino-mqtt/actions/workflows/test.yml/badge.svg)](https://github.com/256dpi/arduino-mqtt/actions/workflows/test.yml)
 [![GitHub release](https://img.shields.io/github/release/256dpi/arduino-mqtt.svg)](https://github.com/hosanglee-kr/PlatformIO-CI-CD-template/releases)
