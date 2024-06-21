@@ -74,7 +74,7 @@ void B40_init()
               ei_printf("%s axis sensor initialization failed.\r\n", g_B40_sensors[g_B40_fusion_sensors[i]].name);
             }
             else {
-              ei_printf("%s axis sensor initialization successful.\r\n", g_B40_sensors[fusion_sensors[i]].name);
+              ei_printf("%s axis sensor initialization successful.\r\n", g_B40_sensors[g_B40_fusion_sensors[i]].name);
             }
         }
     }
@@ -194,7 +194,7 @@ static bool B40_ei_connect_fusion_list(const char *input_list)
 
     /* Clear fusion sensor list */
     memset(g_B40_fusion_sensors, 0, G_B40_N_SENSORS);
-    fusion_ix = 0;
+    g_B40_fusion_ix = 0;
 
     buff = strtok(input_string, "+");
 
