@@ -12,8 +12,8 @@
 // Select camera model - find more camera models in camera_pins.h file here
 // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Camera/CameraWebServer/camera_pins.h
 
-#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
+#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
 #if defined(CAMERA_MODEL_ESP_EYE)
 #define PWDN_GPIO_NUM    -1
@@ -146,7 +146,7 @@ void B30_run()
 
     ei::signal_t signal;
     signal.total_length = EI_CLASSIFIER_INPUT_WIDTH * EI_CLASSIFIER_INPUT_HEIGHT;
-    signal.get_data = &ei_camera_get_data;
+    signal.get_data = &B30_ei_camera_get_data;
 
     if (B30_ei_camera_capture((size_t)EI_CLASSIFIER_INPUT_WIDTH, (size_t)EI_CLASSIFIER_INPUT_HEIGHT, snapshot_buf) == false) {
         ei_printf("Failed to capture image\r\n");
