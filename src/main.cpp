@@ -44,7 +44,7 @@ void loop() {
 		B10_run();
 	#endif
 	#ifdef B40
-		B40_ru ();
+		B40_run();
 	#endif
 
 
