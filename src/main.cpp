@@ -8,12 +8,14 @@
 #ifdef B10
 	#include "B10_esp32_microphone_001.h"
 #endif
-#define B30
+
+
+//#define B30
 #ifdef B30
     #include "B30_ESP32-Camera_001.h"
 #endif
 
-//#define B40
+#define B40
 #ifdef B40
     #include "B40_ESP32_fusion_001.h"
 #endif
@@ -42,7 +44,7 @@ void loop() {
 		B10_run();
 	#endif
 	#ifdef B40
-		B40_ru ();
+		B40_run();
 	#endif
 
 
