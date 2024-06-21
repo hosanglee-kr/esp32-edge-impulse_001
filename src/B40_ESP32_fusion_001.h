@@ -205,7 +205,7 @@ static bool B40_ei_connect_fusion_list(const char *input_list)
         found_axis = B40_ei_find_axis(buff);
 
         if(found_axis >= 0) {
-            if(g_B40_fusion_ix < N_SENSORS) {
+            if(g_B40_fusion_ix < G_B40_N_SENSORS) {
                 g_B40_fusion_sensors[g_B40_fusion_ix++] = found_axis;
                 g_B40_sensors[found_axis].status = 0;
             }
