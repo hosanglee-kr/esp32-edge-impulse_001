@@ -10,10 +10,10 @@
 #endif
 #define B30
 #ifdef B30
-    #include "B40_ESP32_fusion_001.h"
+    #include "B30_ESP32-Camera_001.h"
 #endif
 
-#define B40
+//#define B40
 #ifdef B40
     #include "B40_ESP32_fusion_001.h"
 #endif
