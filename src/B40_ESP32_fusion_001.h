@@ -109,7 +109,7 @@ void B40_run()
                 g_B40_sensors[g_B40_fusion_sensors[i]].poll_sensor();
                 g_B40_sensors[g_B40_fusion_sensors[i]].status = 2;
             }
-            if (sensors[g_B40_fusion_sensors[i]].status == 2) {
+            if (g_B40_sensors[g_B40_fusion_sensors[i]].status == 2) {
                 buffer[ix + i] = *g_B40_sensors[g_B40_fusion_sensors[i]].value;
                 //ei_printf("%d %f\n", g_B40_fusion_sensors[i], buffer[ix + i]);
                 g_B40_sensors[g_B40_fusion_sensors[i]].status = 1;
