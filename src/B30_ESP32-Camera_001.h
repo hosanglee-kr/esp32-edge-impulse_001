@@ -340,7 +340,7 @@ bool B30_ei_camera_capture(uint32_t img_width, uint32_t img_height, uint8_t *out
 
 #ifdef EI_CLASSIFIER_SENSOR
     #undef EI_CLASSIFIER_SENSOR
-    #define EI_CLASSIFIER_SENSOR_CAMERA
+    #define EI_CLASSIFIER_SENSOR EI_CLASSIFIER_SENSOR_CAMERA
 #endif
 
 #if EI_CLASSIFIER_SENSOR != EI_CLASSIFIER_SENSOR_CAMERA
