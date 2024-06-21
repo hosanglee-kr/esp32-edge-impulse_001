@@ -45,10 +45,10 @@ LIS3DHTR<TwoWire> lis;
 /** Used sensors value function connected to label name */
 eiSensors sensors[] =
 {
-    "accX", &data[0], &poll_IMU, &init_IMU, -1,
-    "accY", &data[1], &poll_IMU, &init_IMU, -1,
-    "accZ", &data[2], &poll_IMU, &init_IMU, -1,
-    "adc", &data[6], &poll_ADC, &init_ADC, -1,
+    "accX", &data[0], &B40_poll_IMU, &B40_init_IMU, -1,
+    "accY", &data[1], &B40_poll_IMU, &B40_init_IMU, -1,
+    "accZ", &data[2], &B40_poll_IMU, &B40_init_IMU, -1,
+    "adc", &data[6], &B40_poll_ADC, &B40_init_ADC, -1,
 };
 
 /**
