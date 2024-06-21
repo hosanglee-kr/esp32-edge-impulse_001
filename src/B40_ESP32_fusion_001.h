@@ -23,32 +23,32 @@ typedef struct{
                                         // but this example use Arudino library which set range to +-4g.
                                         // If you are using an older model, ignore this value and use 4.0f instead
 /** Number sensor axes used */
-#define N_SENSORS     7
+#define G_B40_N_SENSORS     7
 
 /* Forward declarations ------------------------------------------------------- */
-float B40_ei_get_sign(float number);
+float       B40_ei_get_sign(float number);
 static bool B40_ei_connect_fusion_list(const char *input_list);
 
-bool B40_init_IMU(void);
-bool B40_init_ADC(void);
-uint8_t B40_poll_IMU(void);
-uint8_t B40_poll_ADC(void);
+bool        B40_init_IMU(void);
+bool        B40_init_ADC(void);
+uint8_t     B40_poll_IMU(void);
+uint8_t     B40_poll_ADC(void);
 
 /* Private variables ------------------------------------------------------- */
 static const bool debug_nn = false; // Set this to true to see e.g. features generated from the raw signal
-static float data[N_SENSORS];
-static int8_t fusion_sensors[N_SENSORS];
-static int fusion_ix = 0;
+static float      g_B40_data[G_B40_N_SENSORS];
+static int8_t     g_B40_fusion_sensors[G_B40_N_SENSORS];
+static int        g_B40_fusion_ix = 0;
 
 LIS3DHTR<TwoWire> lis;
 
 /** Used sensors value function connected to label name */
-eiSensors sensors[] =
+eiSensors g_B40_sensors[] =
 {
-    "accX", &data[0], &B40_poll_IMU, &B40_init_IMU, -1,
-    "accY", &data[1], &B40_poll_IMU, &B40_init_IMU, -1,
-    "accZ", &data[2], &B40_poll_IMU, &B40_init_IMU, -1,
-    "adc", &data[6], &B40_poll_ADC, &B40_init_ADC, -1,
+    "accX", &g_B40_data[0], &B40_poll_IMU, &B40_init_IMU, -1,
+    "accY", &g_B40_data[1], &B40_poll_IMU, &B40_init_IMU, -1,
+    "accZ", &g_B40_data[2], &B40_poll_IMU, &B40_init_IMU, -1,
+    "adc",  &g_B40_data[6], &B40_poll_ADC, &B40_init_ADC, -1,
 };
 
 /**
@@ -67,14 +67,14 @@ void B40_init()
 
     /* Init & start sensors */
 
-    for(int i = 0; i < fusion_ix; i++) {
-        if (sensors[fusion_sensors[i]].status == 0) {
-            sensors[fusion_sensors[i]].status = sensors[fusion_sensors[i]].init_sensor();
-            if (!sensors[fusion_sensors[i]].status) {
-              ei_printf("%s axis sensor initialization failed.\r\n", sensors[fusion_sensors[i]].name);
+    for(int i = 0; i < g_B40_fusion_ix; i++) {
+        if (g_B40_sensors[g_B40_fusion_sensors[i]].status == 0) {
+            g_B40_sensors[g_B40_fusion_sensors[i]].status = g_B40_sensors[g_B40_fusion_sensors[i]].init_sensor();
+            if (!g_B40_sensors[g_B40_fusion_sensors[i]].status) {
+              ei_printf("%s axis sensor initialization failed.\r\n", g_B40_sensors[g_B40_fusion_sensors[i]].name);
             }
             else {
-              ei_printf("%s axis sensor initialization successful.\r\n", sensors[fusion_sensors[i]].name);
+              ei_printf("%s axis sensor initialization successful.\r\n", g_B40_sensors[fusion_sensors[i]].name);
             }
         }
     }
@@ -89,7 +89,7 @@ void B40_run()
 
     delay(2000);
 
-    if (EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME != fusion_ix) {
+    if (EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME != g_B40_fusion_ix) {
         ei_printf("ERR: Sensors don't match the sensors required in the model\r\n"
         "Following sensors are required: %s\r\n", EI_CLASSIFIER_FUSION_AXES_STRING);
         return;
@@ -104,15 +104,15 @@ void B40_run()
         // Determine the next tick (and then sleep later)
         int64_t next_tick = (int64_t)micros() + ((int64_t)EI_CLASSIFIER_INTERVAL_MS * 1000);
 
-        for(int i = 0; i < fusion_ix; i++) {
-            if (sensors[fusion_sensors[i]].status == 1) {
-                sensors[fusion_sensors[i]].poll_sensor();
-                sensors[fusion_sensors[i]].status = 2;
+        for(int i = 0; i < g_B40_fusion_ix; i++) {
+            if (g_B40_sensors[g_B40_fusion_sensors[i]].status == 1) {
+                g_B40_sensors[g_B40_fusion_sensors[i]].poll_sensor();
+                g_B40_sensors[g_B40_fusion_sensors[i]].status = 2;
             }
-            if (sensors[fusion_sensors[i]].status == 2) {
-                buffer[ix + i] = *sensors[fusion_sensors[i]].value;
-                //ei_printf("%d %f\n", fusion_sensors[i], buffer[ix + i]);
-                sensors[fusion_sensors[i]].status = 1;
+            if (sensors[g_B40_fusion_sensors[i]].status == 2) {
+                buffer[ix + i] = *g_B40_sensors[g_B40_fusion_sensors[i]].value;
+                //ei_printf("%d %f\n", g_B40_fusion_sensors[i], buffer[ix + i]);
+                g_B40_sensors[g_B40_fusion_sensors[i]].status = 1;
             }
         }
 
@@ -165,8 +165,8 @@ void B40_run()
 static int8_t B40_ei_find_axis(char *axis_name)
 {
     int ix;
-    for(ix = 0; ix < N_SENSORS; ix++) {
-        if(strstr(axis_name, sensors[ix].name)) {
+    for(ix = 0; ix < G_B40_N_SENSORS; ix++) {
+        if(strstr(axis_name, g_B40_sensors[ix].name)) {
             return ix;
         }
     }
@@ -193,7 +193,7 @@ static bool B40_ei_connect_fusion_list(const char *input_list)
     strncpy(input_string, input_list, strlen(input_list));
 
     /* Clear fusion sensor list */
-    memset(fusion_sensors, 0, N_SENSORS);
+    memset(g_B40_fusion_sensors, 0, G_B40_N_SENSORS);
     fusion_ix = 0;
 
     buff = strtok(input_string, "+");
@@ -205,9 +205,9 @@ static bool B40_ei_connect_fusion_list(const char *input_list)
         found_axis = B40_ei_find_axis(buff);
 
         if(found_axis >= 0) {
-            if(fusion_ix < N_SENSORS) {
-                fusion_sensors[fusion_ix++] = found_axis;
-                sensors[found_axis].status = 0;
+            if(g_B40_fusion_ix < N_SENSORS) {
+                g_B40_fusion_sensors[g_B40_fusion_ix++] = found_axis;
+                g_B40_sensors[found_axis].status = 0;
             }
             is_fusion = true;
         }
@@ -258,24 +258,24 @@ bool B40_init_ADC(void) {
 
 uint8_t B40_poll_IMU(void) {
 
-    lis.getAcceleration(&data[0], &data[1], &data[2]);
+    lis.getAcceleration(&g_B40_data[0], &g_B40_data[1], &g_B40_data[2]);
 
     for (int i = 0; i < 3; i++) {
-        if (fabs(data[i]) > MAX_ACCEPTED_RANGE) {
-            data[i] = B40_ei_get_sign(data[i]) * MAX_ACCEPTED_RANGE;
+        if (fabs(g_B40_data[i]) > MAX_ACCEPTED_RANGE) {
+            g_B40_data[i] = B40_ei_get_sign(g_B40_data[i]) * MAX_ACCEPTED_RANGE;
         }
     }
 
-    data[0] *= CONVERT_G_TO_MS2;
-    data[1] *= CONVERT_G_TO_MS2;
-    data[2] *= CONVERT_G_TO_MS2;
+    g_B40_data[0] *= CONVERT_G_TO_MS2;
+    g_B40_data[1] *= CONVERT_G_TO_MS2;
+    g_B40_data[2] *= CONVERT_G_TO_MS2;
 
     return 0;
 }
 
 uint8_t B40_poll_ADC(void) {
     // change to another pin if necessary
-    data[6] = analogRead(A0);
+    g_B40_data[6] = analogRead(A0);
     return 0;
 }
 
