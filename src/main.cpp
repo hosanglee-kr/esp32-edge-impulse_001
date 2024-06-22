@@ -1,12 +1,12 @@
 #include <Arduino.h>
 
-//#define B05
+#define B05
 #ifdef B05
 	#include "B05_static_buffer_001.h"
 #endif
 
 
-//#define B10
+#define B10
 #ifdef B10
 	#include "B10_esp32_microphone_001.h"
 #endif
@@ -17,12 +17,12 @@
 #endif
 
 
-//#define B30
+#define B30
 #ifdef B30
     #include "B30_ESP32-Camera_001.h"
 #endif
 
-//#define B40
+#define B40
 #ifdef B40
     #include "B40_ESP32_fusion_001.h"
 #endif
