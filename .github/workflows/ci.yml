@@ -11,8 +11,8 @@ jobs:
         matrix:
           environments:
             - "esp32doit"
-            - "esp32-s3-devkitm-1"
-  
+          #  - "esp32-s3-devkitm-1"
+
     runs-on: ubuntu-latest
 
     steps:
@@ -48,7 +48,7 @@ jobs:
           VERSION: "0.0.${{ github.event.number }}"
         run: platformio run -e ${{ matrix.environments }}
         #run: pio run
-        
+
       - name: Upload Assets
         uses: actions/upload-artifact@v4
         with:
@@ -59,4 +59,4 @@ jobs:
             #retention-days: 7
 
 
-            
+
