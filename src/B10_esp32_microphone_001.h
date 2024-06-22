@@ -60,7 +60,7 @@ static bool B10_EI_check_mic_recorded(void);												// Wait on new data
 static int 	B10_EI_microphone_audio_signal_get_data(size_t offset, size_t length, float *out_ptr) ; //Get raw audio signal data
 static void B10_EI_microphone_inference_end(void);													// Stop PDM and release buffers
 
- 
+
 
 /////////////
 
@@ -122,9 +122,9 @@ static void B10_EI_capture_Mic_taskWorker(void *arg) {
 			            g_B10_EI_inference.buf_ready = 1;
 	                }
 	             }
-    
+
 				//B10_EI_audio_inference_callback(i2s_bytes_to_read);
-				
+
 			} else {
 				break;
 			}
@@ -152,7 +152,7 @@ static bool B10_EI_init_createTask(uint32_t n_samples) {
 
 	g_B10_EI_inference.buf_count = 0;
 	g_B10_EI_inference.n_samples = n_samples;
-	g_B10_EI_inference.buf_ready = 0;	
+	g_B10_EI_inference.buf_ready = 0;
 
 	g_B10_EI_record_status = true;
 
@@ -177,7 +177,7 @@ void B10_init() {
 		ei_printf("Failed to start I2S!");
 	}
 	ei_sleep(100);
-	
+
 	if (B10_EI_init_createTask(EI_CLASSIFIER_RAW_SAMPLE_COUNT) == false) {
 		ei_printf("ERR: Could not allocate audio buffer (size %d), this could be due to the window length of your model\r\n", EI_CLASSIFIER_RAW_SAMPLE_COUNT);
 		return;
@@ -208,7 +208,7 @@ static bool B10_EI_check_mic_recorded(void) {
 void B10_run() {
 
 	bool m = B10_EI_check_mic_recorded();
-	
+
 	if (!m) {
 		ei_printf("ERR: Failed to record audio...\n");
 		return;
@@ -217,9 +217,9 @@ void B10_run() {
 	signal_t signal;
 	signal.total_length		   = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
 
-	signal.get_data			   
+	signal.get_data
 		= &B10_EI_microphone_audio_signal_get_data;
-	
+
 	ei_impulse_result_t result = {0};
 
 	EI_IMPULSE_ERROR	r	   = run_classifier(&signal, &result, g_B10_EI_debug_nn);
@@ -279,7 +279,7 @@ static int B10_I2S_Mic_init(uint32_t sampling_rate) {
 		.sample_rate		  = sampling_rate,
 		.bits_per_sample	  = (i2s_bits_per_sample_t)16,
 		.channel_format		  = I2S_CHANNEL_FMT_ONLY_RIGHT,
-		.communication_format = I2S_COMM_FORMAT_I2S,
+		.communication_format = I2S_COMM_FORMAT_STAND_I2S,		//I2S_COMM_FORMAT_I2S,
 		.intr_alloc_flags	  = 0,
 		.dma_buf_count		  = 8,
 		.dma_buf_len		  = 512,

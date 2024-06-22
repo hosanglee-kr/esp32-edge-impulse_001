@@ -12,62 +12,62 @@
 // Select camera model - find more camera models in camera_pins.h file here
 // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Camera/CameraWebServer/camera_pins.h
 
-//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define G_B30_CAMERA_MODEL_ESP_EYE // Has PSRAM
+#define G_B30_CAMERA_MODEL_AI_THINKER // Has PSRAM
 
-#if defined(CAMERA_MODEL_ESP_EYE)
-#define PWDN_GPIO_NUM    -1
-#define RESET_GPIO_NUM   -1
-#define XCLK_GPIO_NUM    4
-#define SIOD_GPIO_NUM    18
-#define SIOC_GPIO_NUM    23
+#if defined(G_B30_CAMERA_MODEL_ESP_EYE)
+	#define PWDN_GPIO_NUM    -1
+	#define RESET_GPIO_NUM   -1
+	#define XCLK_GPIO_NUM    4
+	#define SIOD_GPIO_NUM    18
+	#define SIOC_GPIO_NUM    23
 
-#define Y9_GPIO_NUM      36
-#define Y8_GPIO_NUM      37
-#define Y7_GPIO_NUM      38
-#define Y6_GPIO_NUM      39
-#define Y5_GPIO_NUM      35
-#define Y4_GPIO_NUM      14
-#define Y3_GPIO_NUM      13
-#define Y2_GPIO_NUM      34
-#define VSYNC_GPIO_NUM   5
-#define HREF_GPIO_NUM    27
-#define PCLK_GPIO_NUM    25
+	#define Y9_GPIO_NUM      36
+	#define Y8_GPIO_NUM      37
+	#define Y7_GPIO_NUM      38
+	#define Y6_GPIO_NUM      39
+	#define Y5_GPIO_NUM      35
+	#define Y4_GPIO_NUM      14
+	#define Y3_GPIO_NUM      13
+	#define Y2_GPIO_NUM      34
+	#define VSYNC_GPIO_NUM   5
+	#define HREF_GPIO_NUM    27
+	#define PCLK_GPIO_NUM    25
 
-#elif defined(CAMERA_MODEL_AI_THINKER)
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
+#elif defined(G_B30_CAMERA_MODEL_AI_THINKER)
+	#define PWDN_GPIO_NUM     32
+	#define RESET_GPIO_NUM    -1
+	#define XCLK_GPIO_NUM      0
+	#define SIOD_GPIO_NUM     26
+	#define SIOC_GPIO_NUM     27
 
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+	#define Y9_GPIO_NUM       35
+	#define Y8_GPIO_NUM       34
+	#define Y7_GPIO_NUM       39
+	#define Y6_GPIO_NUM       36
+	#define Y5_GPIO_NUM       21
+	#define Y4_GPIO_NUM       19
+	#define Y3_GPIO_NUM       18
+	#define Y2_GPIO_NUM        5
+	#define VSYNC_GPIO_NUM    25
+	#define HREF_GPIO_NUM     23
+	#define PCLK_GPIO_NUM     22
 
 #else
-#error "Camera model not selected"
+	#error "Camera model not selected"
 #endif
 
 /* Constant defines -------------------------------------------------------- */
-#define EI_CAMERA_RAW_FRAME_BUFFER_COLS           320
-#define EI_CAMERA_RAW_FRAME_BUFFER_ROWS           240
-#define EI_CAMERA_FRAME_BYTE_SIZE                 3
+#define G_B30_EI_CAMERA_RAW_FRAME_BUFFER_COLS           320
+#define G_B30_EI_CAMERA_RAW_FRAME_BUFFER_ROWS           240
+#define G_B30_EI_CAMERA_FRAME_BYTE_SIZE                 3
 
 /* Private variables ------------------------------------------------------- */
-static bool debug_nn = false; // Set this to true to see e.g. features generated from the raw signal
-static bool is_initialised = false;
-uint8_t *snapshot_buf; //points to the output of the capture
+static bool 			g_B30_debug_nn 				= false; 	// Set this to true to see e.g. features generated from the raw signal
+static bool 			g_B30_is_initialised 			= false;
+uint8_t*				g_B30_snapshot_buf; 						//points to the output of the capture
 
-static camera_config_t camera_config = {
+static camera_config_t 	g_B30_camera_config = {
     .pin_pwdn = PWDN_GPIO_NUM,
     .pin_reset = RESET_GPIO_NUM,
     .pin_xclk = XCLK_GPIO_NUM,
@@ -116,7 +116,7 @@ static int B30_ei_camera_get_data(size_t offset, size_t length, float *out_ptr)
     while (pixels_left != 0) {
         // Swap BGR to RGB here
         // due to https://github.com/espressif/esp32-camera/issues/379
-        out_ptr[out_ptr_ix] = (snapshot_buf[pixel_ix + 2] << 16) + (snapshot_buf[pixel_ix + 1] << 8) + snapshot_buf[pixel_ix];
+        out_ptr[out_ptr_ix] = (g_B30_snapshot_buf[pixel_ix + 2] << 16) + (g_B30_snapshot_buf[pixel_ix + 1] << 8) + g_B30_snapshot_buf[pixel_ix];
 
         // go to the next pixel
         out_ptr_ix++;
@@ -158,10 +158,10 @@ void B30_run()
         return;
     }
 
-    snapshot_buf = (uint8_t*)malloc(EI_CAMERA_RAW_FRAME_BUFFER_COLS * EI_CAMERA_RAW_FRAME_BUFFER_ROWS * EI_CAMERA_FRAME_BYTE_SIZE);
+    g_B30_snapshot_buf = (uint8_t*)malloc(G_B30_EI_CAMERA_RAW_FRAME_BUFFER_COLS * G_B30_EI_CAMERA_RAW_FRAME_BUFFER_ROWS * G_B30_EI_CAMERA_FRAME_BYTE_SIZE);
 
     // check if allocation was successful
-    if(snapshot_buf == nullptr) {
+    if(g_B30_snapshot_buf == nullptr) {
         ei_printf("ERR: Failed to allocate snapshot buffer!\n");
         return;
     }
@@ -170,16 +170,16 @@ void B30_run()
     signal.total_length = EI_CLASSIFIER_INPUT_WIDTH * EI_CLASSIFIER_INPUT_HEIGHT;
     signal.get_data = &B30_ei_camera_get_data;
 
-    if (B30_ei_camera_capture((size_t)EI_CLASSIFIER_INPUT_WIDTH, (size_t)EI_CLASSIFIER_INPUT_HEIGHT, snapshot_buf) == false) {
+    if (B30_ei_camera_capture((size_t)EI_CLASSIFIER_INPUT_WIDTH, (size_t)EI_CLASSIFIER_INPUT_HEIGHT, g_B30_snapshot_buf) == false) {
         ei_printf("Failed to capture image\r\n");
-        free(snapshot_buf);
+        free(g_B30_snapshot_buf);
         return;
     }
 
     // Run the classifier
     ei_impulse_result_t result = { 0 };
 
-    EI_IMPULSE_ERROR err = run_classifier(&signal, &result, debug_nn);
+    EI_IMPULSE_ERROR err = run_classifier(&signal, &result, g_B30_debug_nn);
     if (err != EI_IMPULSE_OK) {
         ei_printf("ERR: Failed to run classifier (%d)\n", err);
         return;
@@ -189,31 +189,31 @@ void B30_run()
     ei_printf("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
                 result.timing.dsp, result.timing.classification, result.timing.anomaly);
 
-#if EI_CLASSIFIER_OBJECT_DETECTION == 1
-    bool bb_found = result.bounding_boxes[0].value > 0;
-    for (size_t ix = 0; ix < result.bounding_boxes_count; ix++) {
-        auto bb = result.bounding_boxes[ix];
-        if (bb.value == 0) {
-            continue;
-        }
-        ei_printf("    %s (%f) [ x: %u, y: %u, width: %u, height: %u ]\n", bb.label, bb.value, bb.x, bb.y, bb.width, bb.height);
-    }
-    if (!bb_found) {
-        ei_printf("    No objects found\n");
-    }
-#else
-    for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
-        ei_printf("    %s: %.5f\n", result.classification[ix].label,
-                                    result.classification[ix].value);
-    }
-#endif
+	#if EI_CLASSIFIER_OBJECT_DETECTION == 1
+		bool bb_found = result.bounding_boxes[0].value > 0;
+		for (size_t ix = 0; ix < result.bounding_boxes_count; ix++) {
+			auto bb = result.bounding_boxes[ix];
+			if (bb.value == 0) {
+				continue;
+			}
+			ei_printf("    %s (%f) [ x: %u, y: %u, width: %u, height: %u ]\n", bb.label, bb.value, bb.x, bb.y, bb.width, bb.height);
+		}
+		if (!bb_found) {
+			ei_printf("    No objects found\n");
+		}
+	#else
+		for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
+			ei_printf("    %s: %.5f\n", result.classification[ix].label,
+										result.classification[ix].value);
+		}
+	#endif
 
-#if EI_CLASSIFIER_HAS_ANOMALY == 1
-        ei_printf("    anomaly score: %.3f\n", result.anomaly);
-#endif
+	#if EI_CLASSIFIER_HAS_ANOMALY == 1
+			ei_printf("    anomaly score: %.3f\n", result.anomaly);
+	#endif
 
 
-    free(snapshot_buf);
+    free(g_B30_snapshot_buf);
 
 }
 
@@ -224,15 +224,15 @@ void B30_run()
  */
 bool B30_ei_camera_init(void) {
 
-    if (is_initialised) return true;
+    if (g_B30_is_initialised) return true;
 
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
+	#if defined(CAMERA_MODEL_ESP_EYE)
+	pinMode(13, INPUT_PULLUP);
+	pinMode(14, INPUT_PULLUP);
+	#endif
 
     //initialize the camera
-    esp_err_t err = esp_camera_init(&camera_config);
+    esp_err_t err = esp_camera_init(&g_B30_camera_config);
     if (err != ESP_OK) {
       Serial.printf("Camera init failed with error 0x%x\n", err);
       return false;
@@ -246,16 +246,16 @@ bool B30_ei_camera_init(void) {
       s->set_saturation(s, 0); // lower the saturation
     }
 
-#if defined(CAMERA_MODEL_M5STACK_WIDE)
-    s->set_vflip(s, 1);
-    s->set_hmirror(s, 1);
-#elif defined(CAMERA_MODEL_ESP_EYE)
-    s->set_vflip(s, 1);
-    s->set_hmirror(s, 1);
-    s->set_awb_gain(s, 1);
-#endif
+	#if defined(CAMERA_MODEL_M5STACK_WIDE)
+		s->set_vflip(s, 1);
+		s->set_hmirror(s, 1);
+	#elif defined(CAMERA_MODEL_ESP_EYE)
+		s->set_vflip(s, 1);
+		s->set_hmirror(s, 1);
+		s->set_awb_gain(s, 1);
+	#endif
 
-    is_initialised = true;
+    g_B30_is_initialised = true;
     return true;
 }
 
@@ -273,7 +273,7 @@ void B30_ei_camera_deinit(void) {
         return;
     }
 
-    is_initialised = false;
+    g_B30_is_initialised = false;
     return;
 }
 
@@ -292,7 +292,7 @@ void B30_ei_camera_deinit(void) {
 bool B30_ei_camera_capture(uint32_t img_width, uint32_t img_height, uint8_t *out_buf) {
     bool do_resize = false;
 
-    if (!is_initialised) {
+    if (!g_B30_is_initialised) {
         ei_printf("ERR: Camera is not initialized\r\n");
         return false;
     }
@@ -304,7 +304,7 @@ bool B30_ei_camera_capture(uint32_t img_width, uint32_t img_height, uint8_t *out
         return false;
     }
 
-   bool converted = fmt2rgb888(fb->buf, fb->len, PIXFORMAT_JPEG, snapshot_buf);
+   bool converted = fmt2rgb888(fb->buf, fb->len, PIXFORMAT_JPEG, g_B30_snapshot_buf);
 
    esp_camera_fb_return(fb);
 
@@ -313,16 +313,16 @@ bool B30_ei_camera_capture(uint32_t img_width, uint32_t img_height, uint8_t *out
        return false;
    }
 
-    if ((img_width != EI_CAMERA_RAW_FRAME_BUFFER_COLS)
-        || (img_height != EI_CAMERA_RAW_FRAME_BUFFER_ROWS)) {
+    if ((img_width != G_B30_EI_CAMERA_RAW_FRAME_BUFFER_COLS)
+        || (img_height != G_B30_EI_CAMERA_RAW_FRAME_BUFFER_ROWS)) {
         do_resize = true;
     }
 
     if (do_resize) {
         ei::image::processing::crop_and_interpolate_rgb888(
         out_buf,
-        EI_CAMERA_RAW_FRAME_BUFFER_COLS,
-        EI_CAMERA_RAW_FRAME_BUFFER_ROWS,
+        G_B30_EI_CAMERA_RAW_FRAME_BUFFER_COLS,
+        G_B30_EI_CAMERA_RAW_FRAME_BUFFER_ROWS,
         out_buf,
         img_width,
         img_height);
@@ -334,7 +334,7 @@ bool B30_ei_camera_capture(uint32_t img_width, uint32_t img_height, uint8_t *out
 
 
 
-#if !defined(EI_CLASSIFIER_SENSOR) 
+#if !defined(EI_CLASSIFIER_SENSOR)
     #error "Invalid model for current sensor-EI_CLASSIFIER_SENSOR"
 #endif
 
