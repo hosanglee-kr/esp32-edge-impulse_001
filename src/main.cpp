@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-
 //#define B05
 #ifdef B05
 	#include "B05_static_buffer_001.h"
@@ -66,10 +65,10 @@ void setup() {
 
 void loop() {
 
+
 	#ifdef B05
 		B05_run();
 	#endif
-
 
 	#ifdef B10
 		B10_run();
@@ -82,7 +81,6 @@ void loop() {
 	#ifdef B30
 		B30_run();
 	#endif
-
 
 	#ifdef B40
 		B40_run();
