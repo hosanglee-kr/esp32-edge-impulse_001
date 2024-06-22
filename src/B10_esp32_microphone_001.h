@@ -1,24 +1,5 @@
-/* Edge Impulse Arduino examples
- * Copyright (c) 2022 EdgeImpulse Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// https://github.com/Maaajaaa/DSP_test_inferencing/blob/main/examples/esp32/esp32_microphone/esp32_microphone.ino
+
 
 // These sketches are tested with 2.0.4 ESP32 Arduino Core
 // https://github.com/espressif/arduino-esp32/releases/tag/2.0.4
@@ -56,31 +37,34 @@ typedef struct {
 	uint8_t	 buf_ready;
 	uint32_t buf_count;
 	uint32_t n_samples;
-} inference_t;
+} T_B10_inference_t;
 
-static inference_t	  g_B10_EI_inference;
-static const uint32_t g_B10_EI_sample_buffer_size = 2048;
-static signed short	  g_B10_EI_sampleBuffer[g_B10_EI_sample_buffer_size];
-static bool			  g_B10_EI_debug_nn		= false;  // Set this to true to see e.g. features generated from the raw signal
-static bool			  g_B10_EI_record_status = true;
+static T_B10_inference_t	  g_B10_EI_inference;
+static const uint32_t         g_B10_EI_sample_buffer_size = 2048;
+static signed short	          g_B10_EI_sampleBuffer[g_B10_EI_sample_buffer_size];
+static bool			          g_B10_EI_debug_nn		= false;  // Set this to true to see e.g. features generated from the raw signal
+static bool			          g_B10_EI_record_status = true;
 
 
 ///////////////////////
-static void B10_EI_audio_inference_callback(uint32_t n_bytes);
-static void B10_EI_capture_samples(void *arg);
-static bool B10_EI_microphone_inference_start(uint32_t n_samples); 									// Init inferencing struct and setup/start PDM
-static bool B10_EI_microphone_inference_record(void);												// Wait on new data
-static int 	B10_EI_microphone_audio_signal_get_data(size_t offset, size_t length, float *out_ptr) ; //Get raw audio signal data
-static void B10_EI_microphone_inference_end(void);													// Stop PDM and release buffers
-
 static int 	B10_I2S_Mic_init(uint32_t sampling_rate);
 static int 	B10_I2S_Mic_uninstall(void);
 
+static bool B10_EI_init_createTask(uint32_t n_samples); 									// Init inferencing struct and setup/start PDM
+
+//static void B10_EI_audio_inference_callback(uint32_t n_bytes);
+static void B10_EI_capture_Mic_taskWorker(void *arg);
+
+
+static bool B10_EI_check_mic_recorded(void);												// Wait on new data
+static int 	B10_EI_microphone_audio_signal_get_data(size_t offset, size_t length, float *out_ptr) ; //Get raw audio signal data
+static void B10_EI_microphone_inference_end(void);													// Stop PDM and release buffers
+
+ 
+
 /////////////
 
-
-void B10_init() {
-
+void B10_EI_Init_Print(){
 	Serial.println("Edge Impulse Inferencing Demo");
 
 	// summary of inferencing settings (from model_metadata.h)
@@ -94,8 +78,107 @@ void B10_init() {
 
 	ei_printf("\nStarting continious inference in 2 seconds...\n");
 	ei_sleep(2000);
+}
 
-	if (B10_EI_microphone_inference_start(EI_CLASSIFIER_RAW_SAMPLE_COUNT) == false) {
+// static void B10_EI_audio_inference_callback(uint32_t n_bytes) {
+//	for (int i = 0; i < n_bytes >> 1; i++) {
+//		g_B10_EI_inference.buffer[g_B10_EI_inference.buf_count++] = g_B10_EI_sampleBuffer[i];
+//
+//		if (g_B10_EI_inference.buf_count >= g_B10_EI_inference.n_samples) {
+//			g_B10_EI_inference.buf_count = 0;
+//			g_B10_EI_inference.buf_ready = 1;
+//		}
+//	}
+//}
+
+static void B10_EI_capture_Mic_taskWorker(void *arg) {
+	const int32_t i2s_bytes_to_read = (uint32_t)arg;
+	size_t		  bytes_read		= i2s_bytes_to_read;
+
+	while (g_B10_EI_record_status) {
+		/* read data at once from i2s */
+		i2s_read((i2s_port_t)1, (void *)g_B10_EI_sampleBuffer, i2s_bytes_to_read, &bytes_read, 100);
+
+		if (bytes_read <= 0) {
+			ei_printf("Error in I2S read : %d", bytes_read);
+		} else {
+			if (bytes_read < i2s_bytes_to_read) {
+				ei_printf("Partial I2S read");
+			}
+
+			// scale the data (otherwise the sound is too quiet)
+			for (int x = 0; x < i2s_bytes_to_read / 2; x++) {
+				g_B10_EI_sampleBuffer[x] = (int16_t)(g_B10_EI_sampleBuffer[x]) * 8;
+			}
+
+			if (g_B10_EI_record_status) {
+				////////
+				//static void B10_EI_audio_inference_callback(uint32_t n_bytes) {
+	            for (int i = 0; i < i2s_bytes_to_read >> 1; i++) {
+		           g_B10_EI_inference.buffer[g_B10_EI_inference.buf_count++] = g_B10_EI_sampleBuffer[i];
+
+		           if (g_B10_EI_inference.buf_count >= g_B10_EI_inference.n_samples) {
+			            g_B10_EI_inference.buf_count = 0;
+			            g_B10_EI_inference.buf_ready = 1;
+	                }
+	             }
+    
+				//B10_EI_audio_inference_callback(i2s_bytes_to_read);
+				
+			} else {
+				break;
+			}
+		}
+	}
+	vTaskDelete(NULL);
+}
+
+/**
+ * @brief      Init inferencing struct and setup/start PDM
+ *
+ * @param[in]  n_samples  The n samples
+ *
+ * @return     { description_of_the_return_value }
+ */
+
+
+
+static bool B10_EI_init_createTask(uint32_t n_samples) {
+	g_B10_EI_inference.buffer = (int16_t *)malloc(n_samples * sizeof(int16_t));
+
+	if (g_B10_EI_inference.buffer == NULL) {
+		return false;
+	}
+
+	g_B10_EI_inference.buf_count = 0;
+	g_B10_EI_inference.n_samples = n_samples;
+	g_B10_EI_inference.buf_ready = 0;	
+
+	g_B10_EI_record_status = true;
+
+	xTaskCreate(
+					  B10_EI_capture_Mic_taskWorker
+					, "CaptureSamples"
+					, 1024 * 32
+					, (void *)g_B10_EI_sample_buffer_size
+					, 10
+					, NULL
+				);
+
+	return true;
+}
+
+
+void B10_init() {
+
+    B10_EI_Init_Print();
+
+    if (B10_I2S_Mic_init(EI_CLASSIFIER_FREQUENCY)) {
+		ei_printf("Failed to start I2S!");
+	}
+	ei_sleep(100);
+	
+	if (B10_EI_init_createTask(EI_CLASSIFIER_RAW_SAMPLE_COUNT) == false) {
 		ei_printf("ERR: Could not allocate audio buffer (size %d), this could be due to the window length of your model\r\n", EI_CLASSIFIER_RAW_SAMPLE_COUNT);
 		return;
 	}
@@ -104,9 +187,28 @@ void B10_init() {
 }
 
 
+/*
+ * @brief      Wait on new data
+ *
+ * @return     True when finished
+ */
+
+static bool B10_EI_check_mic_recorded(void) {
+	bool ret = true;
+
+	while (g_B10_EI_inference.buf_ready == 0) {
+		delay(10);
+	}
+
+	g_B10_EI_inference.buf_ready = 0;
+	return ret;
+}
+
+
 void B10_run() {
 
-	bool m = B10_EI_microphone_inference_record();
+	bool m = B10_EI_check_mic_recorded();
+	
 	if (!m) {
 		ei_printf("ERR: Failed to record audio...\n");
 		return;
@@ -114,7 +216,10 @@ void B10_run() {
 
 	signal_t signal;
 	signal.total_length		   = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
-	signal.get_data			   = &B10_EI_microphone_audio_signal_get_data;
+
+	signal.get_data			   
+		= &B10_EI_microphone_audio_signal_get_data;
+	
 	ei_impulse_result_t result = {0};
 
 	EI_IMPULSE_ERROR	r	   = run_classifier(&signal, &result, g_B10_EI_debug_nn);
@@ -142,116 +247,10 @@ void B10_run() {
 }
 
 
-static void B10_EI_audio_inference_callback(uint32_t n_bytes) {
-	for (int i = 0; i < n_bytes >> 1; i++) {
-		g_B10_EI_inference.buffer[g_B10_EI_inference.buf_count++] = g_B10_EI_sampleBuffer[i];
-
-		if (g_B10_EI_inference.buf_count >= g_B10_EI_inference.n_samples) {
-			g_B10_EI_inference.buf_count = 0;
-			g_B10_EI_inference.buf_ready = 1;
-		}
-	}
-}
-
-
-
-static void B10_EI_capture_samples(void *arg) {
-	const int32_t i2s_bytes_to_read = (uint32_t)arg;
-	size_t		  bytes_read		= i2s_bytes_to_read;
-
-	while (g_B10_EI_record_status) {
-		/* read data at once from i2s */
-		i2s_read((i2s_port_t)1, (void *)g_B10_EI_sampleBuffer, i2s_bytes_to_read, &bytes_read, 100);
-
-		if (bytes_read <= 0) {
-			ei_printf("Error in I2S read : %d", bytes_read);
-		} else {
-			if (bytes_read < i2s_bytes_to_read) {
-				ei_printf("Partial I2S read");
-			}
-
-			// scale the data (otherwise the sound is too quiet)
-			for (int x = 0; x < i2s_bytes_to_read / 2; x++) {
-				g_B10_EI_sampleBuffer[x] = (int16_t)(g_B10_EI_sampleBuffer[x]) * 8;
-			}
-
-			if (g_B10_EI_record_status) {
-				B10_EI_audio_inference_callback(i2s_bytes_to_read);
-			} else {
-				break;
-			}
-		}
-	}
-	vTaskDelete(NULL);
-}
-
-
-
-/**
- * @brief      Init inferencing struct and setup/start PDM
- *
- * @param[in]  n_samples  The n samples
- *
- * @return     { description_of_the_return_value }
- */
-
-
-
-static bool B10_EI_microphone_inference_start(uint32_t n_samples) {
-	g_B10_EI_inference.buffer = (int16_t *)malloc(n_samples * sizeof(int16_t));
-
-	if (g_B10_EI_inference.buffer == NULL) {
-		return false;
-	}
-
-	g_B10_EI_inference.buf_count = 0;
-	g_B10_EI_inference.n_samples = n_samples;
-	g_B10_EI_inference.buf_ready = 0;
-
-	if (B10_I2S_Mic_init(EI_CLASSIFIER_FREQUENCY)) {
-		ei_printf("Failed to start I2S!");
-	}
-
-	ei_sleep(100);
-
-	g_B10_EI_record_status = true;
-
-	xTaskCreate(
-					  B10_EI_capture_samples
-					, "CaptureSamples"
-					, 1024 * 32
-					, (void *)g_B10_EI_sample_buffer_size
-					, 10
-					, NULL
-				);
-
-	return true;
-}
-
-/**
- * @brief      Wait on new data
- *
- * @return     True when finished
- */
-
-
-
-static bool B10_EI_microphone_inference_record(void) {
-	bool ret = true;
-
-	while (g_B10_EI_inference.buf_ready == 0) {
-		delay(10);
-	}
-
-	g_B10_EI_inference.buf_ready = 0;
-	return ret;
-}
 
 /**
  * Get raw audio signal data
  */
-
-
 
 static int B10_EI_microphone_audio_signal_get_data(size_t offset, size_t length, float *out_ptr) {
 	numpy::int16_to_float(&g_B10_EI_inference.buffer[offset], out_ptr, length);
@@ -323,3 +322,9 @@ static int B10_I2S_Mic_uninstall(void) {
 #if !defined(EI_CLASSIFIER_SENSOR) || EI_CLASSIFIER_SENSOR != EI_CLASSIFIER_SENSOR_MICROPHONE
 	#error "Invalid model for current sensor."
 #endif
+
+
+
+
+
+
