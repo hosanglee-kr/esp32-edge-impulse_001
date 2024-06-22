@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-
 //#define B05
 
 #ifdef B05
@@ -43,16 +42,15 @@ void setup() {
 		B40_init();
 	#endif
 
-
 	Serial.println("11111");
 }
 
 void loop() {
 
+
 	#ifdef B05
 		B05_run();
 	#endif
-
 
 	#ifdef B10
 		B10_run();
@@ -61,7 +59,6 @@ void loop() {
 	#ifdef B30
 		B30_run();
 	#endif
-
 
 	#ifdef B40
 		B40_run();
