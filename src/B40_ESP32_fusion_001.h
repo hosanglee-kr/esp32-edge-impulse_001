@@ -15,15 +15,15 @@ typedef struct{
     uint8_t (*poll_sensor)(void);
     bool (*init_sensor)(void);
     int8_t status;  // -1 not used 0 used(unitialized) 1 used(initalized) 2 data sampled
-} eiSensors;
+} T_B40_eiSensors;
 
 /* Constant defines -------------------------------------------------------- */
-#define CONVERT_G_TO_MS2    9.80665f
-#define MAX_ACCEPTED_RANGE  2.0f        // starting 03/2022, models are generated setting range to +-2,
-                                        // but this example use Arudino library which set range to +-4g.
-                                        // If you are using an older model, ignore this value and use 4.0f instead
+#define 	G_B40_CONVERT_G_TO_MS2    		9.80665f
+#define 	G_B40_MAX_ACCEPTED_RANGE  		2.0f        	// starting 03/2022, models are generated setting range to +-2,
+                                        			// but this example use Arudino library which set range to +-4g.
+                                        			// If you are using an older model, ignore this value and use 4.0f instead
 /** Number sensor axes used */
-#define G_B40_N_SENSORS     7
+#define 	G_B40_N_SENSORS     			7
 
 /* Forward declarations ------------------------------------------------------- */
 float       B40_ei_get_sign(float number);
@@ -35,16 +35,15 @@ uint8_t     B40_poll_IMU(void);
 uint8_t     B40_poll_ADC(void);
 
 /* Private variables ------------------------------------------------------- */
-static const bool debug_nn = false; // Set this to true to see e.g. features generated from the raw signal
+static const bool g_B40_debug_nn 			= false; // Set this to true to see e.g. features generated from the raw signal
 static float      g_B40_data[G_B40_N_SENSORS];
 static int8_t     g_B40_fusion_sensors[G_B40_N_SENSORS];
-static int        g_B40_fusion_ix = 0;
+static int        g_B40_fusion_ix 			= 0;
 
-LIS3DHTR<TwoWire> lis;
+LIS3DHTR<TwoWire> g_B40_lis;
 
 /** Used sensors value function connected to label name */
-eiSensors g_B40_sensors[] =
-{
+T_B40_eiSensors g_B40_sensors[] = {
     "accX", &g_B40_data[0], &B40_poll_IMU, &B40_init_IMU, -1,
     "accY", &g_B40_data[1], &B40_poll_IMU, &B40_init_IMU, -1,
     "accZ", &g_B40_data[2], &B40_poll_IMU, &B40_init_IMU, -1,
@@ -56,7 +55,7 @@ eiSensors g_B40_sensors[] =
 */
 void B40_init()
 {
-    
+
     Serial.println("Edge Impulse Sensor Fusion Inference\r\n");
 
     /* Connect used sensors */
@@ -134,7 +133,7 @@ void B40_run()
     // Run the classifier
     ei_impulse_result_t result = { 0 };
 
-    err = run_classifier(&signal, &result, debug_nn);
+    err = run_classifier(&signal, &result, g_B40_debug_nn);
     if (err != EI_IMPULSE_OK) {
         ei_printf("ERR:(%d)\r\n", err);
         return;
@@ -146,9 +145,10 @@ void B40_run()
     for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
         ei_printf("%s: %.5f\r\n", result.classification[ix].label, result.classification[ix].value);
     }
-#if EI_CLASSIFIER_HAS_ANOMALY == 1
-    ei_printf("    anomaly score: %.3f\r\n", result.anomaly);
-#endif
+
+	#if EI_CLASSIFIER_HAS_ANOMALY == 1
+		ei_printf("    anomaly score: %.3f\r\n", result.anomaly);
+	#endif
 }
 
 #ifdef EI_CLASSIFIER_SENSOR
@@ -238,8 +238,8 @@ float B40_ei_get_sign(float number) {
 bool B40_init_IMU(void) {
   static bool init_status = false;
   if (!init_status) {
-    lis.begin(Wire, LIS3DHTR_DEFAULT_ADDRESS);
-    init_status = lis.isConnection();
+    g_B40_lis.begin(Wire, LIS3DHTR_DEFAULT_ADDRESS);
+    init_status = g_B40_lis.isConnection();
 
     if(init_status == false) {
         ei_printf("Failed to connect to Inertial sensor!\n");
@@ -247,8 +247,8 @@ bool B40_init_IMU(void) {
     }
 
     ei_sleep(100);
-    lis.setFullScaleRange(LIS3DHTR_RANGE_2G);
-    lis.setOutputDataRate(LIS3DHTR_DATARATE_100HZ);
+    g_B40_lis.setFullScaleRange(LIS3DHTR_RANGE_2G);
+    g_B40_lis.setOutputDataRate(LIS3DHTR_DATARATE_100HZ);
   }
   return init_status;
 }
@@ -263,17 +263,17 @@ bool B40_init_ADC(void) {
 
 uint8_t B40_poll_IMU(void) {
 
-    lis.getAcceleration(&g_B40_data[0], &g_B40_data[1], &g_B40_data[2]);
+    g_B40_lis.getAcceleration(&g_B40_data[0], &g_B40_data[1], &g_B40_data[2]);
 
     for (int i = 0; i < 3; i++) {
-        if (fabs(g_B40_data[i]) > MAX_ACCEPTED_RANGE) {
-            g_B40_data[i] = B40_ei_get_sign(g_B40_data[i]) * MAX_ACCEPTED_RANGE;
+        if (fabs(g_B40_data[i]) > G_B40_MAX_ACCEPTED_RANGE) {
+            g_B40_data[i] = B40_ei_get_sign(g_B40_data[i]) * G_B40_MAX_ACCEPTED_RANGE;
         }
     }
 
-    g_B40_data[0] *= CONVERT_G_TO_MS2;
-    g_B40_data[1] *= CONVERT_G_TO_MS2;
-    g_B40_data[2] *= CONVERT_G_TO_MS2;
+    g_B40_data[0] *= G_B40_CONVERT_G_TO_MS2;
+    g_B40_data[1] *= G_B40_CONVERT_G_TO_MS2;
+    g_B40_data[2] *= G_B40_CONVERT_G_TO_MS2;
 
     return 0;
 }
